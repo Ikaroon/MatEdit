@@ -568,7 +568,7 @@ namespace MB.MatEdit
             {
                 float point = p;
                 float lVal = curve.Evaluate(point / length);
-                lPixels[p] = new Color(lVal, (lVal - 1f), (lVal - 2f), 1f);
+                lPixels[p] = new Color(lVal, (lVal - 1f), (lVal - 2f), (lVal - 3f));
             }
 
             lResult.SetPixels(lPixels);
