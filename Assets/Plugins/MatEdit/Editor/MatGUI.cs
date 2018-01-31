@@ -33,7 +33,7 @@ namespace MB.MatEdit
         //-----------------------------------------------------------------------------------------
 
         #region Style Data
-        
+
         /// <summary>
         /// The styles used for the different groups
         /// </summary>
@@ -127,7 +127,7 @@ namespace MB.MatEdit
 
             PrepareCopy,
             Copy,
-            
+
             Paste
         }
 
@@ -216,14 +216,23 @@ namespace MB.MatEdit
             bool boolContent;
 
             [SerializeField]
-            string pathContent;
+            int idContent;
+
+            [SerializeField]
+            List<SerializableKeyframe> curveContent = new List<SerializableKeyframe>();
+
+            [SerializeField]
+            List<SerializableColorKey> colorKeyContent = new List<SerializableColorKey>();
+
+            [SerializeField]
+            List<SerializableAlphaKey> alphaKeyContent = new List<SerializableAlphaKey>();
 
             [SerializeField]
             string property;
 
             // Constructors
 
-            public CopyData(FieldType t, string p, float fc = 0f, int ic = 0, bool bc = false, string pc = "")
+            public CopyData(FieldType t, string p, float fc = 0f, int ic = 0, bool bc = false, int guidc = 0, AnimationCurve cc = null, Gradient gc = null)
             {
                 type = t;
                 property = p;
@@ -231,7 +240,29 @@ namespace MB.MatEdit
                 floatContent = fc;
                 intContent = ic;
                 boolContent = bc;
-                pathContent = pc;
+                idContent = guidc;
+                if (cc != null)
+                {
+                    Keyframe[] frames = cc.keys;
+                    for (int f = 0; f < frames.Length; f++)
+                    {
+                        curveContent.Add(new SerializableKeyframe(frames[f]));
+                    }
+                }
+                if (gc != null)
+                {
+                    GradientColorKey[] colorkeys = gc.colorKeys;
+                    for (int c = 0; c < colorkeys.Length; c++)
+                    {
+                        colorKeyContent.Add(new SerializableColorKey(colorkeys[c]));
+                    }
+                    GradientAlphaKey[] alphakeys = gc.alphaKeys;
+                    for (int a = 0; a < alphakeys.Length; a++)
+                    {
+                        alphaKeyContent.Add(new SerializableAlphaKey(alphakeys[a]));
+                    }
+                    idContent = (int)gc.mode;
+                }
             }
 
             public CopyData(FieldType t, string p, Color cc)
@@ -257,13 +288,20 @@ namespace MB.MatEdit
 
                 floatVectorContent = fvc;
             }
-            
+
             /// <summary>
             /// Applies the saved data - typacilly used for a paste progress
             /// </summary>
             /// <param name="mat">The material on which the data should be applied</param>
             public void Apply(Material mat)
             {
+                if (!mat.HasProperty(property))
+                {
+                    return;
+                }
+
+                MatGUI_DATA data = MatGUI_DATA_Editor.GetMatData(mat);
+
                 switch (type)
                 {
                     case FieldType.Int:
@@ -297,7 +335,86 @@ namespace MB.MatEdit
                         mat.SetShaderPassEnabled(property, boolContent);
                         break;
                     case FieldType.Texture:
-                        mat.SetTexture(property, AssetDatabase.LoadAssetAtPath<Texture>(pathContent));
+                        mat.SetTexture(property, (Texture)EditorUtility.InstanceIDToObject(idContent));
+                        break;
+                    case FieldType.Curve:
+                        List<Keyframe> frames = new List<Keyframe>();
+                        for (int f = 0; f < curveContent.Count; f++)
+                        {
+                            frames.Add(curveContent[f].GetKeyframe());
+                        }
+
+                        if (data.curves.ContainsKey(property))
+                        {
+                            data.curves[property] = new AnimationCurve(frames.ToArray());
+                        }
+                        else
+                        {
+                            data.curves.Add(property, new AnimationCurve(frames.ToArray()));
+                        }
+
+                        Texture2D mainTexture = AnimationCurveToTexture(data.curves[property], intContent);
+
+                        if (data.unsavedTextures.ContainsKey(property))
+                        {
+                            Object.DestroyImmediate(data.unsavedTextures[property]);
+                            data.unsavedTextures[property] = mainTexture;
+                        }
+                        else
+                        {
+                            data.unsavedTextures.Add(property, mainTexture);
+                        }
+
+                        mat.SetTexture(property, mainTexture);
+
+                        MarkForSave(mat);
+
+                        break;
+                    case FieldType.Gradient:
+                        List<GradientColorKey> colorkeys = new List<GradientColorKey>();
+                        for (int c = 0; c < colorKeyContent.Count; c++)
+                        {
+                            colorkeys.Add(colorKeyContent[c].GetColorKey());
+                        }
+
+                        List<GradientAlphaKey> alphakeys = new List<GradientAlphaKey>();
+                        for (int a = 0; a < alphaKeyContent.Count; a++)
+                        {
+                            alphakeys.Add(alphaKeyContent[a].GetAlphaKey());
+                        }
+
+                        Gradient tempGradient = new Gradient();
+                        tempGradient.colorKeys = colorkeys.ToArray();
+                        tempGradient.alphaKeys = alphakeys.ToArray();
+                        tempGradient.mode = (GradientMode)idContent;
+                        
+                        if (data.gradients.ContainsKey(property))
+                        {
+                            data.gradients[property] = tempGradient;
+                        }
+                        else
+                        {
+                            data.gradients.Add(property, tempGradient);
+                        }
+
+                        EditorUtility.SetDirty(data);
+
+                        Texture2D gradientTexture = GradientToTexture(tempGradient, intContent);
+
+                        if (data.unsavedTextures.ContainsKey(property))
+                        {
+                            Object.DestroyImmediate(data.unsavedTextures[property]);
+                            data.unsavedTextures[property] = gradientTexture;
+                        }
+                        else
+                        {
+                            data.unsavedTextures.Add(property, gradientTexture);
+                        }
+
+                        mat.SetTexture(property, gradientTexture);
+
+                        MarkForSave(mat);
+
                         break;
                 }
             }
@@ -322,6 +439,231 @@ namespace MB.MatEdit
             }
         }
 
+        /// <summary>
+        /// A class to save the values inside of a Keyframe in a JSON
+        /// </summary>
+        [System.Serializable]
+        private class SerializableKeyframe
+        {
+            [SerializeField]
+            public float inTan;
+
+            [SerializeField]
+            public float outTan;
+
+            [SerializeField]
+            public int tanMode;
+
+            [SerializeField]
+            public float time;
+
+            [SerializeField]
+            public float value;
+
+            public SerializableKeyframe(float it, float ot, int tm, float t, float v)
+            {
+                inTan = it;
+                outTan = ot;
+                tanMode = tm;
+                time = t;
+                value = v;
+            }
+
+            public SerializableKeyframe(Keyframe keyframe)
+            {
+                inTan = keyframe.inTangent;
+                outTan = keyframe.outTangent;
+                tanMode = keyframe.tangentMode;
+                time = keyframe.time;
+                value = keyframe.value;
+            }
+
+            public Keyframe GetKeyframe()
+            {
+                Keyframe kf = new Keyframe(time, value, inTan, outTan);
+                kf.tangentMode = tanMode;
+                return kf;
+            }
+        }
+
+        /// <summary>
+        /// A class to save the values inside of a GradientColorKey in a JSON
+        /// </summary>
+        [System.Serializable]
+        private class SerializableColorKey
+        {
+            [SerializeField]
+            Color value;
+
+            [SerializeField]
+            float time;
+
+            public SerializableColorKey(float t, Color v)
+            {
+                time = t;
+                value = v;
+            }
+
+            public SerializableColorKey(GradientColorKey colorkey)
+            {
+                value = colorkey.color;
+                time = colorkey.time;
+            }
+
+            public GradientColorKey GetColorKey()
+            {
+                GradientColorKey ck = new GradientColorKey(value, time);
+                return ck;
+            }
+        }
+
+        /// <summary>
+        /// A class to save the values inside of a GradientAlphaKey in a JSON
+        /// </summary>
+        [System.Serializable]
+        private class SerializableAlphaKey
+        {
+            [SerializeField]
+            float value;
+
+            [SerializeField]
+            float time;
+
+            public SerializableAlphaKey(float t, float v)
+            {
+                time = t;
+                value = v;
+            }
+
+            public SerializableAlphaKey(GradientAlphaKey alphakey)
+            {
+                value = alphakey.alpha;
+                time = alphakey.time;
+            }
+
+            public GradientAlphaKey GetAlphaKey()
+            {
+                GradientAlphaKey ak = new GradientAlphaKey(value, time);
+                return ak;
+            }
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        /// <summary>
+        /// Converts an animation curve into a texture
+        /// </summary>
+        /// <param name="curve">The curve which should be converted</param>
+        /// <param name="steps">The step count which determindes how detailed this curve is converted</param>
+        /// <returns>The texture containing the animation curve data</returns>
+        internal static Texture2D AnimationCurveToTexture(AnimationCurve curve, int steps)
+        {
+            Texture2D lResult = new Texture2D(steps, 1);
+
+            Color[] lPixels = new Color[steps];
+            float length = steps;
+            for (int p = 0; p < steps; p++)
+            {
+                float point = p;
+                float lVal = curve.Evaluate(point / length);
+                lPixels[p] = new Color(lVal, (lVal - 1f), (lVal - 2f), 1f);
+            }
+
+            lResult.SetPixels(lPixels);
+            lResult.Apply();
+
+            return lResult;
+        }
+
+        /// <summary>
+        /// Converts a gradient into a texture
+        /// </summary>
+        /// <param name="gradiant">The gradient which should be converted</param>
+        /// <param name="steps">The steo count which determinds how detailed this curve is converted</param>
+        /// <returns>The texture containing the gradient data</returns>
+        internal static Texture2D GradientToTexture(Gradient gradiant, int steps)
+        {
+            Texture2D lResult = new Texture2D(steps, 1);
+
+            Color[] lPixels = new Color[steps];
+            float length = steps;
+            for (int p = 0; p < steps; p++)
+            {
+                float point = p;
+                lPixels[p] = gradiant.Evaluate(point / length);
+            }
+
+            lResult.SetPixels(lPixels);
+            lResult.Apply();
+            
+            return lResult;
+        }
+
+        #endregion
+
+        #region Save Methods
+
+        private static Material SAVE_MATERIAL = null;
+
+        private static void CheckToSave()
+        {
+            Object[] objs = Selection.objects;
+            Selection.activeObject = SAVE_MATERIAL;
+
+            MatGUI_DATA lData = MatGUI_DATA_Editor.GetMatData(SAVE_MATERIAL);
+
+            if (lData == null || lData.unsavedTextures == null)
+            {
+                SAVE_MATERIAL = null;
+                Selection.selectionChanged -= CheckToSave;
+                Selection.objects = objs;
+                Selection.selectionChanged.Invoke();
+                return;
+            }
+
+            foreach (KeyValuePair<string, Texture2D> tex in lData.unsavedTextures)
+            {
+                if (lData.savedTextures.ContainsKey(tex.Key))
+                {
+                    Texture2D oldTexture = lData.savedTextures[tex.Key];
+                    oldTexture.SetPixels(tex.Value.GetPixels());
+                    oldTexture.Apply();
+                    EditorUtility.SetDirty(oldTexture);
+                }
+                else
+                {
+                    tex.Value.name = tex.Key;
+                    tex.Value.hideFlags = HideFlags.HideInHierarchy;
+                    lData.savedTextures.Add(tex.Key, tex.Value);
+                    AssetDatabase.AddObjectToAsset(tex.Value, SAVE_MATERIAL);
+                }
+                SAVE_MATERIAL.SetTexture(tex.Key, lData.savedTextures[tex.Key]);
+
+                AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(SAVE_MATERIAL));
+
+                Object.DestroyImmediate(tex.Value);
+            }
+
+            lData.unsavedTextures.Clear();
+            EditorUtility.SetDirty(lData);
+
+            SAVE_MATERIAL = null;
+            Selection.selectionChanged -= CheckToSave;
+            Selection.objects = objs;
+            Selection.selectionChanged.Invoke();
+        }
+
+        private static void MarkForSave(Material material)
+        {
+            if (SAVE_MATERIAL == null)
+            {
+                Selection.selectionChanged += CheckToSave;
+                SAVE_MATERIAL = material;
+            }
+        }
+
         #endregion
 
         //---------------------------------------------------------------------------------------\\
@@ -333,7 +675,7 @@ namespace MB.MatEdit
         //---------------------------------------------------------------------------------------\\
 
         #region Int Field
-        
+
         /// <summary>
         /// A Field to change an int property
         /// </summary>
@@ -800,13 +1142,22 @@ namespace MB.MatEdit
             if (currentTask == Task.Reset)
             {
                 Material tempMat = new Material(material.shader);
-                material.SetVector(property, tempMat.GetVector(property));
+                Vector4 lTempNew = tempMat.GetVector(property);
+                Vector4 lTempOriginal = tempMat.GetVector(property);
+                for (int p = 0; p < part.Length; p++)
+                {
+                    lTempOriginal[(int)part[p]] = lTempNew[(int)part[p]];
+                }
+                material.SetVector(property, lTempOriginal);
                 Object.DestroyImmediate(tempMat);
             }
             else if (currentTask == Task.Copy)
             {
                 CopyPackage tempS = (CopyPackage)taskObject;
-                tempS.copyData.Add(new CopyData(FieldType.Vector, property, material.GetVector(property)));
+                for (int p = 0; p < part.Length; p++)
+                {
+                    tempS.copyData.Add(new CopyData(FieldType.FloatVector, property, new FloatVector(material.GetVector(property)[(int)part[p]], part[p])));
+                }
             }
 
             // Draw Editor Field
@@ -821,6 +1172,389 @@ namespace MB.MatEdit
             EditorGUILayout.EndHorizontal();
             material.SetVector(property, lOriginal);
             return lOriginal;
+        }
+
+        #endregion
+
+        //---------------------------------------------------------------------------------------\\
+
+        //---------------------------------------------------------------------------------------\\
+        //----------------------------------< TEXTURE FIELDS >-----------------------------------\\ 
+        //---------------------------------------------------------------------------------------\\
+
+        //---------------------------------------------------------------------------------------\\
+
+        #region Texture Field
+
+        /// <summary>
+        /// A Field to change a standard texture property
+        /// </summary>
+        /// <param name="content">The title for the field</param>
+        /// <param name="property">The texture property in the material</param>
+        /// <param name="size">The size for the texture field - default is small (one line)</param>
+        /// <param name="material">The material to use for the field - default is the scope material</param>
+        /// <returns>The value of the texture property</returns>
+        public static Texture TextureField(GUIContent content, string property, TextureFieldType size = TextureFieldType.Small, Material material = null)
+        {
+            if (material == null)
+            {
+                material = SCOPE_MATERIAL;
+            }
+
+            InitStyles();
+
+            // Process Tasks
+            if (currentTask == Task.Reset)
+            {
+                Material tempMat = new Material(material.shader);
+                material.SetTexture(property, tempMat.GetTexture(property));
+                Object.DestroyImmediate(tempMat);
+            }
+            else if (currentTask == Task.Copy)
+            {
+                CopyPackage tempS = (CopyPackage)taskObject;
+                tempS.copyData.Add(new CopyData(FieldType.Texture, property, guidc: material.GetTexture(property).GetInstanceID()));
+            }
+
+            // Draw Editor Field
+            Texture2D mainTexture = (Texture2D)EditorGUILayout.ObjectField(content, material.GetTexture(property), typeof(Texture2D), false, GUILayout.Height((float)size));
+            material.SetTexture(property, mainTexture);
+
+            return mainTexture;
+        }
+
+        #endregion
+
+        #region Normal Map Field
+
+        /// <summary>
+        /// A Field to change a normal map property
+        /// </summary>
+        /// <param name="content">The title for the field</param>
+        /// <param name="property">The texture property in the material</param>
+        /// <param name="size">The size for the texture field - default is small (one line)</param>
+        /// <param name="material">The material to use for the field - default is the scope material</param>
+        /// <returns>The value of the normal map property</returns>
+        public static Texture NormalTextureField(GUIContent content, string property, TextureFieldType size = TextureFieldType.Small, Material material = null)
+        {
+            if (material == null)
+            {
+                material = SCOPE_MATERIAL;
+            }
+
+            InitStyles();
+
+            // Process Tasks
+            if (currentTask == Task.Reset)
+            {
+                Material tempMat = new Material(material.shader);
+                material.SetTexture(property, tempMat.GetTexture(property));
+                Object.DestroyImmediate(tempMat);
+            }
+            else if (currentTask == Task.Copy)
+            {
+                CopyPackage tempS = (CopyPackage)taskObject;
+                tempS.copyData.Add(new CopyData(FieldType.Texture, property, guidc: material.GetTexture(property).GetInstanceID()));
+            }
+
+            // Draw Editor Field
+            Texture2D normalTexture = (Texture2D)EditorGUILayout.ObjectField(content, material.GetTexture(property), typeof(Texture), false, GUILayout.Height((float)size));
+            if (normalTexture != null)
+            {
+                TextureImporter lImporter = (TextureImporter)TextureImporter.GetAtPath(AssetDatabase.GetAssetPath(normalTexture.GetInstanceID()));
+                // Draw notification if the texture is no normal map
+                if (lImporter.textureType != TextureImporterType.NormalMap)
+                {
+                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                    EditorGUILayout.LabelField("Texture is no normal map!");
+                    EditorGUILayout.BeginHorizontal();
+                    if (GUILayout.Button("Fix now"))
+                    {
+                        lImporter.textureType = TextureImporterType.NormalMap;
+                        lImporter.convertToNormalmap = true;
+                    }
+                    if (GUILayout.Button("To Settings"))
+                    {
+                        Selection.activeObject = lImporter;
+                    }
+                    EditorGUILayout.EndHorizontal();
+                    EditorGUILayout.EndVertical();
+                }
+            }
+            material.SetTexture(property, normalTexture);
+            return normalTexture;
+        }
+
+        #endregion
+
+        #region Tiling Field
+
+        /// <summary>
+        /// A Field to change the tiling in the Texture_ST property
+        /// </summary>
+        /// <param name="content">The title for the field</param>
+        /// <param name="property">The texture_ST property in the material</param>
+        /// <param name="material">The material to use for the field - default is the scope material</param>
+        /// <returns>The tiling of the texture_ST property</returns>
+        public static Vector2 TextureTilingField(GUIContent content, string property, Material material = null)
+        {
+            if (material == null)
+            {
+                material = SCOPE_MATERIAL;
+            }
+
+            InitStyles();
+
+            // Draw Editor Field
+            if (content.text != "")
+            {
+                EditorGUILayout.LabelField(content);
+            }
+
+            Vector4 tiling = MatGUI.VectorField(new GUIContent("Tiling", ""), property, PackagePart.x, PackagePart.y);
+            return new Vector2(tiling.x, tiling.y);
+        }
+
+        #endregion
+
+        #region Offset Field
+
+        /// <summary>
+        /// A Field to change the offset in the Texture_ST property
+        /// </summary>
+        /// <param name="content">The title for the field</param>
+        /// <param name="property">The texture_ST property in the material</param>
+        /// <param name="material">The material to use for the field - default is the scope material</param>
+        /// <returns>The offset of the texture_ST property</returns>
+        public static Vector2 TextureOffsetField(GUIContent content, string property, Material material = null)
+        {
+            if (material == null)
+            {
+                material = SCOPE_MATERIAL;
+            }
+
+            InitStyles();
+
+            // Draw Editor Field
+            if (content.text != "")
+            {
+                EditorGUILayout.LabelField(content);
+            }
+
+            Vector4 tiling = MatGUI.VectorField(new GUIContent("Offset", ""), property, PackagePart.z, PackagePart.w);
+            return new Vector2(tiling.z, tiling.w);
+        }
+
+        #endregion
+
+        #region Texture Data Field
+
+        /// <summary>
+        /// A Field to change the Texture_ST property
+        /// </summary>
+        /// <param name="content">The title for the field</param>
+        /// <param name="property">The texture_ST property in the material</param>
+        /// <param name="material">The material to use for the field - default is the scope material</param>
+        /// <returns>The value of the texture_ST property</returns>
+        public static Vector4 TextureDataField(GUIContent content, string property, Material material = null)
+        {
+            if (material == null)
+            {
+                material = SCOPE_MATERIAL;
+            }
+
+            InitStyles();
+
+            // Draw Editor Field
+            if (content.text != "")
+            {
+                EditorGUILayout.LabelField(content);
+            }
+
+            MatGUI.VectorField(new GUIContent("Tiling", ""), property, PackagePart.x, PackagePart.y);
+            return MatGUI.VectorField(new GUIContent("Offset", ""), property, PackagePart.z, PackagePart.w);
+        }
+
+        #endregion
+
+        //---------------------------------------------------------------------------------------\\
+
+        //---------------------------------------------------------------------------------------\\
+        //-----------------------------------< SPECIAL FIELDS >----------------------------------\\ 
+        //---------------------------------------------------------------------------------------\\
+
+        //---------------------------------------------------------------------------------------\\
+
+        #region Animation Curve Field
+
+        /// <summary>
+        /// A Field to change a texture property in form of an animation curve
+        /// </summary>
+        /// <param name="content">The title for the field</param>
+        /// <param name="property">The texture property in the material</param>
+        /// <param name="quality">The amount of pixels in the width</param>
+        /// <param name="material">The material to use for the field - default is the scope material</param>
+        /// <returns>The value of the texture property</returns>
+        public static Texture AnimationCurveField(GUIContent content, string property, int quality, Material material = null)
+        {
+            if (material == null)
+            {
+                material = SCOPE_MATERIAL;
+            }
+
+            InitStyles();
+
+            // Get the mat data to process the field
+            MatGUI_DATA data = MatGUI_DATA_Editor.GetMatData(material);
+            if (data == null)
+            {
+                EditorGUILayout.CurveField(content, new AnimationCurve());
+                return null;
+            }
+
+            // Process Tasks
+            if (currentTask == Task.Reset)
+            {
+                AnimationCurve resetCurve = new AnimationCurve();
+                data.curves[property] = resetCurve;
+                Object.DestroyImmediate(data.unsavedTextures[property]);
+                Texture2D resetTexture = AnimationCurveToTexture(resetCurve, quality);
+                data.unsavedTextures[property] = resetTexture;
+                material.SetTexture(property, resetTexture);
+            }
+            else if (currentTask == Task.Copy)
+            {
+                CopyPackage tempS = (CopyPackage)taskObject;
+                tempS.copyData.Add(new CopyData(FieldType.Curve, property, cc: data.curves[property], ic: quality));
+            }
+
+            // Draw Editor Field
+            AnimationCurve curve = new AnimationCurve();
+            if (data.curves.ContainsKey(property))
+            {
+                curve = data.curves[property];
+            }
+            else
+            {
+                data.curves.Add(property, curve);
+            }
+
+            EditorGUI.BeginChangeCheck();
+            curve = EditorGUILayout.CurveField(content, curve);
+            bool lEdited = EditorGUI.EndChangeCheck();
+
+            data.curves[property] = curve;
+            EditorUtility.SetDirty(data);
+
+            if (lEdited)
+            {
+                Texture2D mainTexture = AnimationCurveToTexture(curve, quality);
+
+                if (data.unsavedTextures.ContainsKey(property))
+                {
+                    Object.DestroyImmediate(data.unsavedTextures[property]);
+                    data.unsavedTextures[property] = mainTexture;
+                }
+                else
+                {
+                    data.unsavedTextures.Add(property, mainTexture);
+                }
+
+                material.SetTexture(property, mainTexture);
+            }
+
+            MarkForSave(material);
+            return material.GetTexture(property);
+        }
+
+        #endregion
+
+        #region Gradient Field
+
+        /// <summary>
+        /// A Field to change a texture property in form of a gradient
+        /// </summary>
+        /// <param name="content">The title for the field</param>
+        /// <param name="property">The texture property in the material</param>
+        /// <param name="quality">The amount of pixels in the width</param>
+        /// <param name="material">The material to use for the field - default is the scope material</param>
+        /// <returns>The value of the texture property</returns>
+        public static Texture GradientField(GUIContent content, string property, int quality, Material material = null)
+        {
+            if (material == null)
+            {
+                material = SCOPE_MATERIAL;
+            }
+
+            InitStyles();
+
+            // Get the mat data to process the field
+            MatGUI_DATA data = MatGUI_DATA_Editor.GetMatData(material);
+            if (data == null)
+            {
+                EditorGUILayout.CurveField(content, new AnimationCurve());
+                return null;
+            }
+
+            // Process Tasks
+            if (currentTask == Task.Reset)
+            {
+                Gradient resetGradient = new Gradient();
+                data.gradients[property] = resetGradient;
+                Object.DestroyImmediate(data.unsavedTextures[property]);
+                Texture2D resetTexture = GradientToTexture(resetGradient, quality);
+                data.unsavedTextures[property] = resetTexture;
+                material.SetTexture(property, resetTexture);
+            }
+            else if (currentTask == Task.Copy)
+            {
+                CopyPackage tempS = (CopyPackage)taskObject;
+                tempS.copyData.Add(new CopyData(FieldType.Gradient, property, gc: data.gradients[property], ic: quality));
+            }
+
+            // Draw Editor Field
+            Gradient gradient = new Gradient();
+            if (data.gradients.ContainsKey(property))
+            {
+                gradient = data.gradients[property];
+            }
+            else
+            {
+                data.gradients.Add(property, gradient);
+            }
+
+            EditorGUI.BeginChangeCheck();
+            System.Reflection.MethodInfo method = typeof(EditorGUILayout).GetMethod("GradientField",
+                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic,
+                null, new System.Type[] { typeof(GUIContent), typeof(Gradient), typeof(GUILayoutOption[]) }, null);
+            if (method != null)
+            {
+                gradient = (Gradient)method.Invoke(null, new object[] { content, gradient, new GUILayoutOption[] { } });
+            }
+            bool lEdited = EditorGUI.EndChangeCheck();
+
+            if (lEdited)
+            {
+                data.gradients[property] = gradient;
+                EditorUtility.SetDirty(data);
+
+                Texture2D mainTexture = GradientToTexture(gradient, quality);
+
+                if (data.unsavedTextures.ContainsKey(property))
+                {
+                    Object.DestroyImmediate(data.unsavedTextures[property]);
+                    data.unsavedTextures[property] = mainTexture;
+                }
+                else
+                {
+                    data.unsavedTextures.Add(property, mainTexture);
+                }
+
+                material.SetTexture(property, mainTexture);
+            }
+
+            MarkForSave(material);
+            return material.GetTexture(property);
         }
 
         #endregion
@@ -845,7 +1579,7 @@ namespace MB.MatEdit
         //-----------------------------------------------------------------------------------------
 
         #region Static Group
-        
+
         /// <summary>
         /// Displays a group containing all fields which are used in the content.
         /// </summary>
@@ -1065,7 +1799,7 @@ namespace MB.MatEdit
         //-----------------------------------------------------------------------------------------
 
         #region Group Content
-        
+
         /// <summary>
         /// Draws the group content
         /// </summary>
@@ -1108,7 +1842,6 @@ namespace MB.MatEdit
                 if (currentTask == Task.Copy)
                 {
                     CopyPackage package = (CopyPackage)taskObject;
-                    Debug.Log(package.copyData.Count);
 
                     string copy = JsonUtility.ToJson(package, true);
                     EditorGUIUtility.systemCopyBuffer = copy;

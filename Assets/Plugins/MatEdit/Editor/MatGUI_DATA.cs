@@ -31,7 +31,13 @@ namespace MB.MatEdit
         /// The generated textures which are saved outside of the material (curve + gradient fields)
         /// </summary>
         [SerializeField]
-        public Texture2DDictionary textures = new Texture2DDictionary();
+        public Texture2DDictionary unsavedTextures = new Texture2DDictionary();
+
+        /// <summary>
+        /// The generated textures which are saved outside of the material (curve + gradient fields)
+        /// </summary>
+        [SerializeField]
+        public Texture2DDictionary savedTextures = new Texture2DDictionary();
 
     }
 

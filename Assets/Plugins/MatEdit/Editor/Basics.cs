@@ -140,6 +140,14 @@ namespace MB.MatEdit
         /// <summary>
         /// A pass field (toggle)
         /// </summary>
-        Pass
+        Pass,
+        /// <summary>
+        /// An animation curve field
+        /// </summary>
+        Curve,
+        /// <summary>
+        /// A gradient field
+        /// </summary>
+        Gradient
     }
 }

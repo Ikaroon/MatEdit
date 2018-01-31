@@ -9,7 +9,7 @@ namespace MB.MatEdit
     {
         #region Helper Methods
 
-        private static MatGUI_DATA GetMatData(Material material)
+        public static MatGUI_DATA GetMatData(Material material)
         {
             // Get the path of the 
             string path = AssetDatabase.GetAssetPath(material);
@@ -110,5 +110,6 @@ namespace MB.MatEdit
         }
 
         #endregion
+        
     }
 }
