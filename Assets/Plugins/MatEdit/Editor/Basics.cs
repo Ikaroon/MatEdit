@@ -3,6 +3,16 @@
 /// </summary>
 namespace MB.MatEdit
 {
+    internal class Basics
+    {
+        public const string VERSION_FILE = "MATEDIT_VERSION.xml";
+
+        public const string MATGUI_CG = "MatEdit.cginc";
+
+        public const string MATGUI_CG_CURVE = "MatEditCGCurve.cginc";
+        public const string MATGUI_CG_GRADIENT = "MatEditCGGradient.cginc";
+    }
+
     //---------------------------------------------------------------------------------------\\
 
     //---------------------------------------------------------------------------------------\\
