@@ -1,7 +1,9 @@
-﻿using UnityEngine;
+﻿// Unity
+using UnityEngine;
 
 namespace MB.MatEdit
 {
+
     /// <summary>
     /// A Dictionary to save a string and a bool in cooperation
     /// </summary>

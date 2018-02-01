@@ -1,13 +1,21 @@
+// System
 using System.Collections;
 using System.Collections.Generic;
+
+// Unity
 using UnityEngine;
 using UnityEditor;
+
+// MB
 using MB.MatEdit;
 
 public class #CLASS_NAME# : ShaderGUI {
 
+	// Displays the Material GUI
     public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
     {
         MatGUI.SetScope((Material)materialEditor.target);
+		
+		// Draw Material GUI
     }
 }

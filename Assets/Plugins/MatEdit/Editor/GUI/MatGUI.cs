@@ -1,11 +1,15 @@
-﻿using System.Collections;
+﻿// System
 using System.Collections.Generic;
 
+// Unity
 using UnityEngine;
 using UnityEditor;
 
 namespace MB.MatEdit
 {
+    /// <summary>
+    /// A class to visualize a Material UI easily and with extra features
+    /// </summary>
     public sealed class MatGUI
     {
         #region Static Data

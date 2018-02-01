@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿// Unity
 using UnityEngine;
 using UnityEditor;
 
@@ -10,10 +9,64 @@ namespace MB.MatEdit
     /// </summary>
     internal sealed class MaterialData : ScriptableObject
     {
+        //---------------------------------------------------------------------------------------\\
 
+        //---------------------------------------------------------------------------------------\\
+        //-----------------------------------< CONTENT DATA >------------------------------------\\ 
+        //---------------------------------------------------------------------------------------\\
+
+        //---------------------------------------------------------------------------------------\\
+
+        #region Content
+
+        /// <summary>
+        /// The toggles which are saved outside of the material (fold groups)
+        /// </summary>
+        [SerializeField]
+        public ToggleDictionary toggles = new ToggleDictionary();
+
+        /// <summary>
+        /// The curve properties which are saved outside of the material (curve fields)
+        /// </summary>
+        [SerializeField]
+        public CurveDictionary curves = new CurveDictionary();
+
+        /// <summary>
+        /// The gradient properties which are saved outside of the material (gradient fields)
+        /// </summary>
+        [SerializeField]
+        public GradientDictionary gradients = new GradientDictionary();
+
+        /// <summary>
+        /// The generated textures which are saved outside of the material (curve + gradient fields)
+        /// </summary>
+        [SerializeField]
+        public Texture2DDictionary unsavedTextures = new Texture2DDictionary();
+
+        /// <summary>
+        /// The generated textures which are saved outside of the material (curve + gradient fields)
+        /// </summary>
+        [SerializeField]
+        public Texture2DDictionary savedTextures = new Texture2DDictionary();
+
+        #endregion
+
+        //---------------------------------------------------------------------------------------\\
+
+        //---------------------------------------------------------------------------------------\\
+        //-----------------------------------< DATA METHODS >------------------------------------\\ 
+        //---------------------------------------------------------------------------------------\\
+
+        //---------------------------------------------------------------------------------------\\
+        
         #region Getter
 
-        internal static MaterialData Of(Material material)
+        /// <summary>
+        /// Gets the MaterialData of the specified Material
+        /// </summary>
+        /// <param name="material">The material which should expose its MaterialData</param>
+        /// <returns>The MaterialData of material</returns>
+        public static MaterialData Of(Material material)
         {
             // Get the path of the 
             string path = AssetDatabase.GetAssetPath(material);
@@ -112,40 +165,6 @@ namespace MB.MatEdit
                 EditorUtility.SetDirty(data);
             }
         }
-
-        #endregion
-
-        #region Content
-
-        /// <summary>
-        /// The toggles which are saved outside of the material (fold groups)
-        /// </summary>
-        [SerializeField]
-        public ToggleDictionary toggles = new ToggleDictionary();
-
-        /// <summary>
-        /// The curve properties which are saved outside of the material (curve fields)
-        /// </summary>
-        [SerializeField]
-        public CurveDictionary curves = new CurveDictionary();
-
-        /// <summary>
-        /// The gradient properties which are saved outside of the material (gradient fields)
-        /// </summary>
-        [SerializeField]
-        public GradientDictionary gradients = new GradientDictionary();
-
-        /// <summary>
-        /// The generated textures which are saved outside of the material (curve + gradient fields)
-        /// </summary>
-        [SerializeField]
-        public Texture2DDictionary unsavedTextures = new Texture2DDictionary();
-
-        /// <summary>
-        /// The generated textures which are saved outside of the material (curve + gradient fields)
-        /// </summary>
-        [SerializeField]
-        public Texture2DDictionary savedTextures = new Texture2DDictionary();
 
         #endregion
 

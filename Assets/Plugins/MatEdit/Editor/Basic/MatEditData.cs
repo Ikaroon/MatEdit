@@ -1,15 +1,46 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿// Unity
 using UnityEngine;
 using UnityEditor;
-using System.IO;
 
 namespace MB.MatEdit
 {
+    /// <summary>
+    /// A persistant Object to save data which should be done once!
+    /// </summary>
     internal class MatEditData : ScriptableObject
     {
+
+        //---------------------------------------------------------------------------------------\\
+
+        //---------------------------------------------------------------------------------------\\
+        //--------------------------------------< CONTENT >--------------------------------------\\ 
+        //---------------------------------------------------------------------------------------\\
+
+        //---------------------------------------------------------------------------------------\\
+
+        #region Content
+
+        /// <summary>
+        /// If the user was asked to install CG support
+        /// </summary>
         public bool welcomeMessage = false;
 
+        #endregion
+
+        //---------------------------------------------------------------------------------------\\
+
+        //---------------------------------------------------------------------------------------\\
+        //--------------------------------------< GET SET >--------------------------------------\\ 
+        //---------------------------------------------------------------------------------------\\
+
+        //---------------------------------------------------------------------------------------\\
+
+
+        #region Getter Setter
+
+        /// <summary>
+        /// The ScripableObject singleton
+        /// </summary>
         public static MatEditData Data
         {
             get
@@ -25,6 +56,8 @@ namespace MB.MatEdit
                 return DATA;
             }
         }
+
+        #endregion
 
     }
 }

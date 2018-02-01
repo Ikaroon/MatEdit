@@ -1,12 +1,9 @@
-﻿using UnityEditor;
-using UnityEngine;
-using System.IO;
-
-/// <summary>
+﻿/// <summary>
 /// A Tool to create an Shader GUI easily
 /// </summary>
 namespace MB.MatEdit
 {
+
     //---------------------------------------------------------------------------------------\\
 
     //---------------------------------------------------------------------------------------\\
@@ -14,6 +11,8 @@ namespace MB.MatEdit
     //---------------------------------------------------------------------------------------\\
 
     //---------------------------------------------------------------------------------------\\
+
+    #region Public Data
 
     /// <summary>
     /// Defines which component of a Vector should be used
@@ -100,6 +99,8 @@ namespace MB.MatEdit
         Pass
     };
 
+    #endregion
+
     //---------------------------------------------------------------------------------------\\
 
     //---------------------------------------------------------------------------------------\\
@@ -107,6 +108,8 @@ namespace MB.MatEdit
     //---------------------------------------------------------------------------------------\\
 
     //---------------------------------------------------------------------------------------\\
+
+    #region Internal Data
 
     /// <summary>
     /// The type of a field (used for copying and pasting)
@@ -154,4 +157,30 @@ namespace MB.MatEdit
         /// </summary>
         Gradient
     }
+
+    /// <summary>
+    /// The type of installation required
+    /// </summary>
+    internal enum InstallType
+    {
+        /// <summary>
+        /// Installs the extra features
+        /// </summary>
+        Install,
+        /// <summary>
+        /// Uninstalls the extra features
+        /// </summary>
+        Uninstall,
+        /// <summary>
+        /// Upgrades the extra features
+        /// </summary>
+        Upgrade,
+        /// <summary>
+        /// Downgrades the extra features
+        /// </summary>
+        Downgrade
+    };
+
+    #endregion
+
 }

@@ -4,8 +4,13 @@ using UnityEngine;
 
 namespace MB.MatEdit
 {
+    /// <summary>
+    /// A generic Dictionary prepared for serialization
+    /// </summary>
+    /// <typeparam name="TKey">The type for the key</typeparam>
+    /// <typeparam name="TValue">The type for the value</typeparam>
     [System.Serializable]
-    public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, ISerializationCallbackReceiver
+    internal class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, ISerializationCallbackReceiver
     {
         [SerializeField]
         private List<TKey> keys = new List<TKey>();

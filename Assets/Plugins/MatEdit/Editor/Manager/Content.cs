@@ -1,6 +1,9 @@
-﻿using UnityEditor;
-using UnityEngine;
+﻿// System
 using System.IO;
+
+// Unity
+using UnityEditor;
+using UnityEngine;
 
 namespace MB.MatEdit
 {
