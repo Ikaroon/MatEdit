@@ -5,11 +5,15 @@ using UnityEditor;
 
 namespace MB.MatEdit
 {
-    internal static class MatGUI_DATA_Editor
+    /// <summary>
+    /// The class which saves the data for the material which cannot be saved in the material
+    /// </summary>
+    internal sealed class MaterialData : ScriptableObject
     {
-        #region Helper Methods
 
-        public static MatGUI_DATA GetMatData(Material material)
+        #region Getter
+
+        internal static MaterialData Of(Material material)
         {
             // Get the path of the 
             string path = AssetDatabase.GetAssetPath(material);
@@ -21,13 +25,13 @@ namespace MB.MatEdit
 
             // Loads all assets at this location and checks if it is the MatGUI_DATA
             Object[] obj = AssetDatabase.LoadAllAssetsAtPath(path);
-            MatGUI_DATA data = null;
+            MaterialData data = null;
             int o = 0;
             while (o < obj.Length && data == null)
             {
-                if (obj[o].GetType() == typeof(MatGUI_DATA))
+                if (obj[o].GetType() == typeof(MaterialData))
                 {
-                    data = (MatGUI_DATA)obj[o];
+                    data = (MaterialData)obj[o];
                 }
                 o++;
             }
@@ -35,7 +39,7 @@ namespace MB.MatEdit
             // If the data is not created -> create one and place it in the Asset Database as subasset of the material
             if (data == null)
             {
-                data = ScriptableObject.CreateInstance<MatGUI_DATA>();
+                data = ScriptableObject.CreateInstance<MaterialData>();
                 data.hideFlags = HideFlags.HideInHierarchy;
                 data.name = "MatGUI_DATA";
                 AssetDatabase.AddObjectToAsset(data, material);
@@ -55,10 +59,10 @@ namespace MB.MatEdit
         /// <param name="property">The key used for this toggle</param>
         /// <param name="material">The material which stores the data</param>
         /// <returns>The toggle value concerning this key</returns>
-        public static bool GetMaterialSubToggle(string property, Material material)
+        public static bool GetToggleOf(Material material, string property)
         {
             // Get the MatGUI_DATA
-            MatGUI_DATA data = GetMatData(material);
+            MaterialData data = MaterialData.Of(material);
             if (data == null)
             {
                 return false;
@@ -85,10 +89,10 @@ namespace MB.MatEdit
         /// <param name="property">The key used for this toggle</param>
         /// <param name="value">The value which should be writen under the given key</param>
         /// <param name="material">The material which stores the data</param>
-        public static void SetMaterialSubToggle(string property, bool value, Material material)
+        public static void SetToggleOf(Material material, string property, bool value)
         {
             // Get the MatGUI_DATA
-            MatGUI_DATA data = GetMatData(material);
+            MaterialData data = MaterialData.Of(material);
             if (data == null)
             {
                 return;
@@ -110,6 +114,40 @@ namespace MB.MatEdit
         }
 
         #endregion
-        
+
+        #region Content
+
+        /// <summary>
+        /// The toggles which are saved outside of the material (fold groups)
+        /// </summary>
+        [SerializeField]
+        public ToggleDictionary toggles = new ToggleDictionary();
+
+        /// <summary>
+        /// The curve properties which are saved outside of the material (curve fields)
+        /// </summary>
+        [SerializeField]
+        public CurveDictionary curves = new CurveDictionary();
+
+        /// <summary>
+        /// The gradient properties which are saved outside of the material (gradient fields)
+        /// </summary>
+        [SerializeField]
+        public GradientDictionary gradients = new GradientDictionary();
+
+        /// <summary>
+        /// The generated textures which are saved outside of the material (curve + gradient fields)
+        /// </summary>
+        [SerializeField]
+        public Texture2DDictionary unsavedTextures = new Texture2DDictionary();
+
+        /// <summary>
+        /// The generated textures which are saved outside of the material (curve + gradient fields)
+        /// </summary>
+        [SerializeField]
+        public Texture2DDictionary savedTextures = new Texture2DDictionary();
+
+        #endregion
+
     }
 }

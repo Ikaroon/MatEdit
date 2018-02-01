@@ -300,7 +300,7 @@ namespace MB.MatEdit
                     return;
                 }
 
-                MatGUI_DATA data = MatGUI_DATA_Editor.GetMatData(mat);
+                MaterialData data = MaterialData.Of(mat);
 
                 switch (type)
                 {
@@ -612,7 +612,7 @@ namespace MB.MatEdit
             Object[] objs = Selection.objects;
             Selection.activeObject = SAVE_MATERIAL;
 
-            MatGUI_DATA lData = MatGUI_DATA_Editor.GetMatData(SAVE_MATERIAL);
+            MaterialData lData = MaterialData.Of(SAVE_MATERIAL);
 
             if (lData == null || lData.unsavedTextures == null)
             {
@@ -627,10 +627,18 @@ namespace MB.MatEdit
             {
                 if (lData.savedTextures.ContainsKey(tex.Key))
                 {
-                    Texture2D oldTexture = lData.savedTextures[tex.Key];
-                    oldTexture.SetPixels(tex.Value.GetPixels());
-                    oldTexture.Apply();
-                    EditorUtility.SetDirty(oldTexture);
+                    if (lData.savedTextures[tex.Key] != null)
+                    {
+                        Texture2D oldTexture = lData.savedTextures[tex.Key];
+                        oldTexture.SetPixels(tex.Value.GetPixels());
+                        oldTexture.Apply();
+                        EditorUtility.SetDirty(oldTexture);
+
+                        Object.DestroyImmediate(tex.Value, true);
+                    } else
+                    {
+                        lData.savedTextures[tex.Key] = tex.Value;
+                    }
                 }
                 else
                 {
@@ -642,8 +650,6 @@ namespace MB.MatEdit
                 SAVE_MATERIAL.SetTexture(tex.Key, lData.savedTextures[tex.Key]);
 
                 AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(SAVE_MATERIAL));
-
-                Object.DestroyImmediate(tex.Value);
             }
 
             lData.unsavedTextures.Clear();
@@ -1405,7 +1411,7 @@ namespace MB.MatEdit
             InitStyles();
 
             // Get the mat data to process the field
-            MatGUI_DATA data = MatGUI_DATA_Editor.GetMatData(material);
+            MaterialData data = MaterialData.Of(material);
             if (data == null)
             {
                 EditorGUILayout.CurveField(content, new AnimationCurve());
@@ -1417,7 +1423,10 @@ namespace MB.MatEdit
             {
                 AnimationCurve resetCurve = new AnimationCurve();
                 data.curves[property] = resetCurve;
-                Object.DestroyImmediate(data.unsavedTextures[property]);
+                if (data.unsavedTextures.ContainsKey(property))
+                {
+                    Object.DestroyImmediate(data.unsavedTextures[property]);
+                }
                 Texture2D resetTexture = AnimationCurveToTexture(resetCurve, quality);
                 data.unsavedTextures[property] = resetTexture;
                 material.SetTexture(property, resetTexture);
@@ -1489,7 +1498,7 @@ namespace MB.MatEdit
             InitStyles();
 
             // Get the mat data to process the field
-            MatGUI_DATA data = MatGUI_DATA_Editor.GetMatData(material);
+            MaterialData data = MaterialData.Of(material);
             if (data == null)
             {
                 EditorGUILayout.CurveField(content, new AnimationCurve());
@@ -1501,7 +1510,10 @@ namespace MB.MatEdit
             {
                 Gradient resetGradient = new Gradient();
                 data.gradients[property] = resetGradient;
-                Object.DestroyImmediate(data.unsavedTextures[property]);
+                if (data.unsavedTextures.ContainsKey(property))
+                {
+                    Object.DestroyImmediate(data.unsavedTextures[property]);
+                }
                 Texture2D resetTexture = GradientToTexture(resetGradient, quality);
                 data.unsavedTextures[property] = resetTexture;
                 material.SetTexture(property, resetTexture);
@@ -1665,11 +1677,11 @@ namespace MB.MatEdit
 
             GUILayout.BeginHorizontal();
 
-            bool foldOpen = MatGUI_DATA_Editor.GetMaterialSubToggle(property, material);
+            bool foldOpen = MaterialData.GetToggleOf(material, property);
             if (GUILayout.Button(title, groupTitleStyles[(int)style]))
             {
                 foldOpen = !foldOpen;
-                MatGUI_DATA_Editor.SetMaterialSubToggle(property, foldOpen, material);
+                MaterialData.SetToggleOf(material, property, foldOpen);
             }
 
             GroupContext(context, content, material, groupLevel + 1);

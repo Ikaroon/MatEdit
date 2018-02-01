@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<info>
+	<asset>MatEdit</asset>
+	<description>MatEdit is a tool which you can use to make good looking custom editors for shaders very fast and without any effort.</description>
+	<version>0.5</version>
+	<author>Marian Brinkmann</author>
+	<year>2018</year>
+	<url>www.marian-brinkmann.com</url>
+	<logo>MatEdit_Banner.png</logo>
+	<instruction>
+Some Instructions:
+	
+You can use MatEdit for all your custom shaders.
+
+Please do not distribute the tool on the internet.
+
+To see how the tool works simply click on the documentation button below.
+
+If you delete MatEdit from your project be sure to use the uninstall function in this window beforehand.
+If you only see an Upgrade or Downgrade option you have to use this first!
+	</instruction>
+</info>
