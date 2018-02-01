@@ -156,7 +156,7 @@ namespace MB.MatEdit
         /// A gradient field
         /// </summary>
         Gradient
-    }
+    };
 
     /// <summary>
     /// The type of installation required
