@@ -33,11 +33,11 @@ namespace MB.MatEdit
             // Check if the start up question is allready done
             if (!MatEditData.Data.welcomeMessage)
             {
-                AskUserForInstall();
-
                 // Disable the start up question for future updates
                 MatEditData.Data.welcomeMessage = true;
                 EditorUtility.SetDirty(MatEditData.Data);
+
+                AskUserForInstall();
             }
         }
 

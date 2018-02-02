@@ -11,4 +11,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 968ab26ba70d5a84dbde2bd97947b489, type: 3}
   m_Name: DATA
   m_EditorClassIdentifier: 
-  welcomeMessage: 0
+  welcomeMessage: 1

@@ -109,8 +109,8 @@ namespace MB.MatEdit
         /// </summary>
         private void OnEnable()
         {
-            minSize = new Vector2(308f, 400f);
-            maxSize = new Vector2(308f, 400f);
+            minSize = new Vector2(308f, 420f);
+            maxSize = new Vector2(308f, 420f);
             titleContent = new GUIContent("MatEdit | About");
 
             info = new VersionInfo();
