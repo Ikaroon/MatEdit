@@ -1,0 +1,4 @@
+MatEdit ShaderGUI Interface
+Copyright 2018 Marian Brinkmann
+
+Only distribute own shaders and materials with this MatEditDistribute package!

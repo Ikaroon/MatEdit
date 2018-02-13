@@ -1616,7 +1616,7 @@ namespace MB.MatEdit
         /// <param name="context">The context menu of the group (menu, groupContent, groupLevel): anonymous function possible (goes onto the heap) - delegate() {} </param>
         /// <param name="content">The content of the group: anonymous function possible (goes onto the heap) - delegate() {} </param>
         /// <param name="material">The material to use for the group commands</param>
-        public static void Group(GUIContent title, GroupStyle style, System.Action<GenericMenu, System.Action, int> context, System.Action content, Material material = null)
+        public static void Group(GUIContent title, GroupStyle style, System.Action<GenericMenu> context, System.Action content, Material material = null)
         {
             if (material == null)
             {
@@ -1668,7 +1668,7 @@ namespace MB.MatEdit
         /// <param name="content">The content of the group: anonymous function possible (goes onto the heap) - delegate() {} </param>
         /// <param name="material">The material to use for the group commands</param>
         /// <returns>If the group is open</returns>
-        public static bool FoldGroup(GUIContent title, string property, GroupStyle style, System.Action<GenericMenu, System.Action, int> context, System.Action content, Material material = null)
+        public static bool FoldGroup(GUIContent title, string property, GroupStyle style, System.Action<GenericMenu> context, System.Action content, Material material = null)
         {
             if (material == null)
             {
@@ -1732,7 +1732,7 @@ namespace MB.MatEdit
         /// <param name="content">The content of the group: anonymous function possible (goes onto the heap) - delegate() {} </param>
         /// <param name="material">The material to use for the group commands</param>
         /// <returns>If the group is open</returns>
-        public static bool ToggleGroup(GUIContent title, string property, ToggleMode toggleMode, GroupStyle style, System.Action<GenericMenu, System.Action, int> context, System.Action content, Material material = null)
+        public static bool ToggleGroup(GUIContent title, string property, ToggleMode toggleMode, GroupStyle style, System.Action<GenericMenu> context, System.Action content, Material material = null)
         {
             if (material == null)
             {
@@ -1879,7 +1879,7 @@ namespace MB.MatEdit
         /// <param name="content">The content to identify the group</param>
         /// <param name="material">The material to apply commands on</param>
         /// <param name="level">The group level to identify the group</param>
-        private static void GroupContext(System.Action<GenericMenu, System.Action, int> context, System.Action content, Material material, int level)
+        private static void GroupContext(System.Action<GenericMenu> context, System.Action content, Material material, int level)
         {
             if (GUILayout.Button("", optionsStyle))
             {
@@ -1900,7 +1900,7 @@ namespace MB.MatEdit
                 if (context != null)
                 {
                     menu.AddSeparator("");
-                    context.Invoke(menu, content, level);
+                    context.Invoke(menu);
                 }
 
                 menu.ShowAsContext();

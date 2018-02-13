@@ -25,7 +25,12 @@ namespace MB.MatEdit
         /// <summary>
         /// The root of the MatEdit resources in the Resource folder
         /// </summary>
-        internal const string ROOT_PATH = "MatEdit";
+        public const string ROOT_PATH = "MatEdit";
+
+        /// <summary>
+        /// The name of the class in MatEdit which is responsible for drawing the GUI elements
+        /// </summary>
+        public const string GUI_DRAWER = "MatGUI";
 
         #endregion
 

@@ -148,5 +148,57 @@ namespace MB.MatEdit
 
         #endregion
 
+        #region Distribute Context
+
+        /// <summary>
+        /// Starts the Creation of a custom ShaderGUI for each Shader selected
+        /// </summary>
+        [MenuItem("Assets/Create/MatEdit/Create Distribution")]
+        private static void DistributeShader()
+        {
+            // Filter Objects for Shaders
+            Object[] selection = Selection.objects;
+            List<Shader> shader = new List<Shader>();
+            for (int o = 0; o < selection.Length; o++)
+            {
+                if (selection[0].GetType() == typeof(Shader))
+                {
+                    shader.Add((Shader)selection[0]);
+                }
+            }
+
+            // Create Shader Editor
+            for (int s = 0; s < shader.Count; s++)
+            {
+                string fileName = Path.GetFileNameWithoutExtension(AssetDatabase.GetAssetPath(shader[s]));
+
+                string shaderPath = Path.Combine(MatEdit.ProjectPath(), AssetDatabase.GetAssetPath(shader[s]));
+                string path = EditorUtility.SaveFolderPanel("Distribute " + shader[s].name + " To", Application.dataPath, fileName + "Distribution");
+                Distribute.ToPath(shaderPath, path);
+            }
+        }
+
+        /// <summary>
+        /// Checks if at least one selected Object is a Shader
+        /// </summary>
+        /// <returns>True if atleast one Shader is selected</returns>
+        [MenuItem("Assets/Create/MatEdit/Create Distribution", validate = true)]
+        private static bool DistributeShaderValidate()
+        {
+            // Check if Shader is Selected
+            Object[] selection = Selection.objects;
+            for (int o = 0; o < selection.Length; o++)
+            {
+                if (selection[0].GetType() == typeof(Shader))
+                {
+                    return true;
+                }
+            }
+
+            // No Shader is selected
+            return false;
+        }
+
+        #endregion
     }
 }
