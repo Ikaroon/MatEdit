@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MB.MatEdit
 {
-    internal static class FileOperator
+    public static class FileOperator
     {
         /// <summary>
         /// Reads a string from a file
