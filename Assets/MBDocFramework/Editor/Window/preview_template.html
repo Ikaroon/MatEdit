@@ -6,37 +6,33 @@
 </head>
 <body>
 <div class="content-container">
-	<div class="headline">ToggleGroup</div>
+	<div class="headline">GradientField</div>
 	<div class="doc-type">Method</div>
 	<div class="doc-extra">static</div>
 	<div class="doc-extra">MB.MatEdit.MatGUI</div>
 	<div class="head-buffer"></div>
 	<div class="basic-content">
-		public static bool <b>ToggleGroup</b>(GUIContent <b>title</b>, string <b>property</b>, ToggleMode <b>toggleMode</b>, GroupStyle <b>style</b>, Action <b>content</b>, Material <b>material</b> = <i>null</i>);<br/>
-public static bool <b>ToggleGroup</b>(GUIContent <b>title</b>, string <b>property</b>, ToggleMode <b>toggleMode</b>, GroupStyle <b>style</b>, Action&lt;GenericMenu&gt; <b>context</b>, Action <b>content</b>, Material <b>material</b> = <i>null</i>);
+		public static Texture <b>GradientField</b>(GUIContent <b>content</b>, string <b>property</b>, int <b>quality</b>, Material <b>material</b> = <i>null</i>);
 
 		<methodProperties>
 		<h1>Properties</h1>
 		<table class="prop-table"><tbody>
-			<tr><th>title</th><th>The title shown in the head of the group</th></tr>
-<tr><th>property</th><th>The property in the material which contains if this group is open or closed</th></tr>
-<tr><th>toggleMode</th><th>The mode how to save the open/close state and what to manipulate</th></tr>
-<tr><th>style</th><th>The style used for the group border</th></tr>
-<tr><th>content</th><th>The content of the group: anonymous function possible (goes onto the heap) - <b>delegate</b>() {} </th></tr>
-<tr><th>material</th><th>The material to use for the group commands</th></tr>
-<tr><th>context</th><th>The context menu of the group (menu, groupContent, groupLevel): anonymous function possible (goes onto the heap) - delegate() {} </th></tr>
+			<tr><th>content</th><th>The title for the field</th></tr>
+<tr><th>property</th><th>The texture property in the material</th></tr>
+<tr><th>quality</th><th>The amount of pixels in the width</th></tr>
+<tr><th>material</th><th>The material to use for the field - default is the scope material</th></tr>
 
 		</tbody></table>
 		</methodProperties>
 		
 		<methodReturn>
 		<h1>Returns</h1>
-		<b>bool</b> - If the group is open
+		<b>Texture</b> - The value of the texture property
 		</methodReturn>
 		
 		<methodDescription>
 		<h1>Description</h1>
-		Displays a group containing all fields which are used in the content. 
+		A Field to change a texture property in form of a gradient
 		</methodDescription>
 		
 		</div>

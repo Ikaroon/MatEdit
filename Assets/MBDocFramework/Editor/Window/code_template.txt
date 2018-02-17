@@ -1,0 +1,17 @@
+#MethodHead#
+<methodProperties>
+<h1>Properties</h1>
+<table class="prop-table"><tbody>
+	#Properties#
+</tbody></table>
+</methodProperties>
+
+<methodReturn>
+<h1>Returns</h1>
+#ReturnValue#
+</methodReturn>
+
+<methodDescription>
+<h1>Description</h1>
+#DescriptionValue#
+</methodDescription>

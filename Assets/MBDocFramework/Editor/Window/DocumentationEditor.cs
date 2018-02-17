@@ -94,6 +94,8 @@ namespace MB.MatEdit {
 
             if (GUILayout.Button("Copy Code"))
             {
+                string htmlResult = ConvertToCodeHTML();
+                EditorGUIUtility.systemCopyBuffer = htmlResult;
                 // TODO: Copy generated code to the clipboard
             }
 
@@ -101,11 +103,70 @@ namespace MB.MatEdit {
             GUILayout.EndArea();
         }
 
+        string ConvertToCodeHTML()
+        {
+            string path = Directory.GetParent(Path.Combine(Directory.GetParent(Application.dataPath).FullName, AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this)))).FullName;
+            string templatePath = Path.Combine(path, "code_template.txt");
+            string htmlTemplate = FileOperator.ReadStringFromFile(templatePath);
+
+            htmlTemplate = htmlTemplate.Replace("#MethodName#", PrepareHTML(methodName));
+            htmlTemplate = htmlTemplate.Replace("#MethodExtra#", method[0].IsStatic ? "static" : "");
+            htmlTemplate = htmlTemplate.Replace("#MethodNamespace#", PrepareHTML(method[0].DeclaringType.FullName));
+
+            if (methodProperties.Count <= 0)
+            {
+                htmlTemplate = Regex.Replace(htmlTemplate, "<methodProperties>(.|\n)*?</methodProperties>", "");
+            }
+            else
+            {
+                string props = "";
+                foreach (KeyValuePair<string, string> prop in methodProperties)
+                {
+                    props += HTMLRow(prop.Key, prop.Value);
+                }
+                htmlTemplate = htmlTemplate.Replace("#Properties#", props);
+            }
+
+            if (string.IsNullOrEmpty(methodReturns))
+            {
+                htmlTemplate = Regex.Replace(htmlTemplate, "<methodReturn>(.|\n)*?</methodReturn>", "");
+            }
+            else
+            {
+                htmlTemplate = PrepareHTML(htmlTemplate.Replace("#ReturnValue#", "<b>" + FormatToCompiler(method[0].ReturnType) + "</b> - " + methodReturns));
+            }
+
+            if (string.IsNullOrEmpty(methodSummary))
+            {
+                htmlTemplate = Regex.Replace(htmlTemplate, "<methodDescription>(.|\n)*?</methodDescription>", "");
+            }
+            else
+            {
+                htmlTemplate = PrepareHTML(htmlTemplate.Replace("#DescriptionValue#", methodSummary));
+            }
+
+            string modifiedHeads = "";
+            for (int m = 0; m < method.Length; m++)
+            {
+                modifiedHeads += PrepareHTML(InfoToHead(method[m], delegate (CodeType t)
+                {
+                    switch (t)
+                    {
+                        case CodeType.Method: return "b";
+                        case CodeType.MethodParamter: return "b";
+                        case CodeType.ParameterDefault: return "i";
+                    }
+                    return "";
+                })) + (m < method.Length - 1 ? "<br/>\n" : "\n");
+            }
+            // TODO: format modified header
+
+            htmlTemplate = htmlTemplate.Replace("#MethodHead#", modifiedHeads);
+            return htmlTemplate;
+        }
+
         void ConvertToHTML()
         {
-            Debug.Log(AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this)));
-            Debug.Log(Path.Combine(Directory.GetParent(Application.dataPath).FullName, AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this))));
-            Debug.Log(Directory.GetParent(Path.Combine(Directory.GetParent(Application.dataPath).FullName, AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this)))).FullName);
             string path = Directory.GetParent(Path.Combine(Directory.GetParent(Application.dataPath).FullName,AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this)))).FullName;
             string templatePath = Path.Combine(path, "preview_template.txt");
             string previewPath = Path.Combine(path, "preview_template.html");
@@ -164,9 +225,6 @@ namespace MB.MatEdit {
             // TODO: format modified header
 
             htmlTemplate = htmlTemplate.Replace("#MethodHead#", modifiedHeads);
-            
-            Debug.Log(previewPath);
-            Debug.Log(htmlTemplate);
 
             FileOperator.WriteStringToFile(htmlTemplate, previewPath);
             Application.OpenURL("file:///" + previewPath);
@@ -246,6 +304,20 @@ namespace MB.MatEdit {
                 descriptions[i] = PropertyDescriptions(info[i], xmls);
             }
 
+            List<Dictionary<string, string>> sortList = new List<Dictionary<string, string>>();
+
+            for (int d = 0; d < descriptions.Length; d++)
+            {
+                sortList.Add(descriptions[d]);
+            }
+
+            sortList.Sort(delegate (Dictionary<string, string> p1, Dictionary<string, string> p2)
+                {
+                    return p2.Count.CompareTo(p1.Count);
+                });
+
+            descriptions = sortList.ToArray();
+
             string summary = "";
             string returns = "";
             Dictionary<string, string> finalDescriptions = new Dictionary<string, string>();
@@ -280,15 +352,23 @@ namespace MB.MatEdit {
             methodReturns = returns;
         }
 
+        string RemoveBorderSpaces(string value)
+        {
+            value = Regex.Replace(value, @"^(\s*?)\b", "");
+            return Regex.Replace(value, @"\b(\s*?)$", "");
+        }
+
         string MethodReturn(MethodInfo info, string xml)
         {
             string returns = Regex.Replace(Regex.Replace(Regex.Match(xml, "<returns>(.|\n)*?" + "</returns>").Value, "<(.*?)returns>", ""), @"\n(.*?)\/\/\/", "");
+            returns = RemoveBorderSpaces(returns);
             return returns;
         }
 
         string MethodSummary(MethodInfo info, string xml)
         {
             string summary = Regex.Replace(Regex.Replace(Regex.Match(xml, "<summary>(.|\n)*?" + "</summary>").Value, "<(.*?)summary>", ""), @"\n(.*?)\/\/\/", "");
+            summary = RemoveBorderSpaces(summary);
             return summary;
         }
 
@@ -300,6 +380,7 @@ namespace MB.MatEdit {
             for (int p = 0; p < parameters.Length; p++)
             {
                 string description = Regex.Replace(Regex.Replace(Regex.Match(xml, "<param(.*?)" + '"' + parameters[p].Name + '"' + "(.*?)>(.|\n)*?" + "</param>").Value, "<param(.*?)>|</param>", ""), @"\n(.*?)\/\/\/", "");
+                description = RemoveBorderSpaces(description);
                 descriptions.Add(parameters[p].Name, description);
             }
 
