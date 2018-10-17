@@ -1,10 +1,11 @@
 fileFormatVersion: 2
 guid: f6c64f5e9b87fa0409f0f77b42b3db09
-timeCreated: 1517440308
-licenseType: Pro
+labels:
+- MatEdit
 ShaderImporter:
   externalObjects: {}
   defaultTextures: []
+  nonModifiableTextures: []
   userData: 
   assetBundleName: 
   assetBundleVariant: 

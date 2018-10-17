@@ -24,18 +24,14 @@ namespace MB.MatEdit
             Match shaderEditor = Regex.Match(shaderContent, "CustomEditor.*?" + '"' + ".*?" + '"');
             shaderEditor = Regex.Match(shaderEditor.Value, '"' + ".*?" + '"');
             string shaderEditorName = shaderEditor.Value.Replace('"' + "", "").Replace(" ", "");
-            Debug.Log(shaderEditorName);
-
+            
             string shaderEditorPath = GetMonoScriptOfType(shaderEditorName);
-            Debug.Log(shaderEditorPath);
             if (shaderEditorPath == "")
             {
                 return;
             }
             shaderEditorPath = Path.Combine(MatEdit.ProjectPath(), shaderEditorPath);
             
-            Debug.Log(shaderEditorPath);
-
             CopyDirectory(distribute, path);
 
             string newShaderPath = Path.Combine(path, Path.GetFileName(shader));
@@ -46,8 +42,7 @@ namespace MB.MatEdit
             FileOperator.WriteStringToFile(scriptContent, Path.Combine(Path.Combine(path, "Editor"), "MED_" + Path.GetFileName(shaderEditorPath)));
 
             AssetDatabase.Refresh();
-
-            Debug.Log(distribute);
+            
         }
 
         private static string GetMonoScriptOfType(string type)

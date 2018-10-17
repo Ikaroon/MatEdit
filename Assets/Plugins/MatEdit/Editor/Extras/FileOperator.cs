@@ -15,7 +15,7 @@ namespace MB.MatEdit
         {
             // Create the content
             string content = "";
-
+            
             // Abandon if the file is not given
             if (!File.Exists(path))
             {

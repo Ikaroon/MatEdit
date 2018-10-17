@@ -1,8 +1,8 @@
 fileFormatVersion: 2
 guid: e4ab7a1c641ce7e4e97acaa709ce140a
+labels:
+- MatEdit
 folderAsset: yes
-timeCreated: 1517512307
-licenseType: Pro
 DefaultImporter:
   externalObjects: {}
   userData: 
