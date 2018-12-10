@@ -25,6 +25,10 @@ namespace MB.MatEdit
             {
                 pathParent = "";
             }
+            if (pathParent == Directory.GetParent(Application.dataPath).Name)
+            {
+                pathParent = "";
+            }
             string path = Path.Combine(pathParent, Path.GetFileNameWithoutExtension(content)).Replace(@"\", "/");
             return Path.Combine(Directory.GetParent(Application.dataPath).FullName, AssetDatabase.GetAssetPath(Resources.Load(MatEdit.ROOT_PATH + "/" + path)));
         }

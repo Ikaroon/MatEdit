@@ -39,6 +39,7 @@ namespace MB.MatEdit
             FileOperator.WriteStringToFile(shaderContent, newShaderPath);
             string scriptContent = FileOperator.ReadStringFromFile(shaderEditorPath);
             scriptContent = scriptContent.Replace(shaderEditorName, "MED_" + shaderEditorName);
+            scriptContent = scriptContent.Replace("MB.MatEdit", "MB.MatEditDistribute");
             FileOperator.WriteStringToFile(scriptContent, Path.Combine(Path.Combine(path, "Editor"), "MED_" + Path.GetFileName(shaderEditorPath)));
 
             AssetDatabase.Refresh();

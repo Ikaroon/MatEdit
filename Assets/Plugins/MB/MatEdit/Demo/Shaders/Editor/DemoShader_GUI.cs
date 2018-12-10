@@ -30,7 +30,7 @@ public class DemoShader_GUI : ShaderGUI {
             MatGUI.AnimationCurveField(new GUIContent("Y_UV Height"), "_CurveHeightY", 128);
             MatGUI.Group(new GUIContent("Sub Group"), GroupStyle.Sub, delegate ()
             {
-                MatGUI.MinMaxSliderField(new GUIContent("Height Contraints"), "_MinHeight", "_MaxHeight", 0f, 1f, true);
+                MatGUI.MinMaxSliderField(new GUIContent("Height Contraints"), "_MinHeight", "_MaxHeight", 0f, 5f, true);
             });
         });
 

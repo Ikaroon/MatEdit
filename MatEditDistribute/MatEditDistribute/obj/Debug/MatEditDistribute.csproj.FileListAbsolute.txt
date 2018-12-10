@@ -1,0 +1,17 @@
+D:\Documents\Game Developemt\Personal\MatEdit\MatEditDistribute\MatEditDistribute\obj\Debug\MatEditDistribute.csprojAssemblyReference.cache
+D:\Documents\Game Developemt\Personal\MatEdit\MatEditDistribute\MatEditDistribute\obj\Debug\MatEditDistribute.csproj.CoreCompileInputs.cache
+D:\Documents\Game Developemt\Personal\MatEdit\MatEditDistribute\MatEditDistribute\bin\Debug\MatEditDistribute.dll
+D:\Documents\Game Developemt\Personal\MatEdit\MatEditDistribute\MatEditDistribute\bin\Debug\MatEditDistribute.pdb
+D:\Documents\Game Developemt\Personal\MatEdit\MatEditDistribute\MatEditDistribute\bin\Debug\UnityEditor.dll
+D:\Documents\Game Developemt\Personal\MatEdit\MatEditDistribute\MatEditDistribute\bin\Debug\UnityEngine.dll
+D:\Documents\Game Developemt\Personal\MatEdit\MatEditDistribute\MatEditDistribute\bin\Debug\Unity.Cecil.dll
+D:\Documents\Game Developemt\Personal\MatEdit\MatEditDistribute\MatEditDistribute\bin\Debug\Unity.SerializationLogic.dll
+D:\Documents\Game Developemt\Personal\MatEdit\MatEditDistribute\MatEditDistribute\bin\Debug\Unity.DataContract.dll
+D:\Documents\Game Developemt\Personal\MatEdit\MatEditDistribute\MatEditDistribute\bin\Debug\ExCSS.Unity.dll
+D:\Documents\Game Developemt\Personal\MatEdit\MatEditDistribute\MatEditDistribute\bin\Debug\Unity.Legacy.NRefactory.dll
+D:\Documents\Game Developemt\Personal\MatEdit\MatEditDistribute\MatEditDistribute\bin\Debug\Unity.CecilTools.dll
+D:\Documents\Game Developemt\Personal\MatEdit\MatEditDistribute\MatEditDistribute\bin\Debug\UnityEditor.xml
+D:\Documents\Game Developemt\Personal\MatEdit\MatEditDistribute\MatEditDistribute\bin\Debug\UnityEngine.xml
+D:\Documents\Game Developemt\Personal\MatEdit\MatEditDistribute\MatEditDistribute\obj\Debug\MatEditDistribute.csproj.CopyComplete
+D:\Documents\Game Developemt\Personal\MatEdit\MatEditDistribute\MatEditDistribute\obj\Debug\MatEditDistribute.dll
+D:\Documents\Game Developemt\Personal\MatEdit\MatEditDistribute\MatEditDistribute\obj\Debug\MatEditDistribute.pdb

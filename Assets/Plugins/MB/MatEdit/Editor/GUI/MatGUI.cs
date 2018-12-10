@@ -566,12 +566,15 @@ namespace MB.MatEdit
         {
             Texture2D lResult = new Texture2D(steps, 1);
 
+            Vector4 borders = CurveToBorders(curve);
+
             Color[] lPixels = new Color[steps];
             float length = steps;
             for (int p = 0; p < steps; p++)
             {
                 float point = p;
-                float lVal = curve.Evaluate(point / length);
+                float x = Mathf.InverseLerp(borders.x, borders.z, point / length);
+                float lVal = Mathf.InverseLerp(borders.y, borders.w, curve.Evaluate(x)) * 4f;
                 lPixels[p] = new Color(lVal, (lVal - 1f), (lVal - 2f), (lVal - 3f));
             }
 
@@ -579,6 +582,40 @@ namespace MB.MatEdit
             lResult.Apply();
 
             return lResult;
+        }
+
+        /// <summary>
+        /// Generates a Vector4 to define the borders of an AnimationCurve
+        /// </summary>
+        /// <param name="curve">The AnimationCurve to convert</param>
+        /// <returns>The borders of the AnimationCurve</returns>
+        internal static Vector4 CurveToBorders(AnimationCurve curve)
+        {
+            float xStart = curve.keys[0].time;
+            float yStart = curve.keys[0].value;
+            float xEnd = curve.keys[curve.keys.Length - 1].time;
+            float yEnd = curve.keys[curve.keys.Length - 1].value;
+
+            for (int k = 0; k < curve.keys.Length - 1; k++)
+            {
+                float startTime = curve.keys[k].time;
+                float endTime = curve.keys[k + 1].time;
+                int iterations = Mathf.CeilToInt(Mathf.Abs(endTime - startTime) * 3f);
+                for (int p = 0; p <= iterations; p++)
+                {
+                    float value = curve.Evaluate(Mathf.Lerp(startTime, endTime, p / iterations));
+                    if (value > yEnd)
+                    {
+                        yEnd = value;
+                    }
+                    if (value < yStart)
+                    {
+                        yStart = value;
+                    }
+                }
+            }
+
+            return new Vector4(xStart, yStart, xEnd, yEnd);
         }
 
         /// <summary>
@@ -1322,6 +1359,7 @@ namespace MB.MatEdit
             }
 
             Vector4 tiling = MatGUI.VectorField(new GUIContent("Tiling", ""), property, PackagePart.x, PackagePart.y);
+            material.SetTextureScale(property.Substring(0, property.Length - 3), new Vector2(tiling.x, tiling.y));
             return new Vector2(tiling.x, tiling.y);
         }
 
@@ -1352,6 +1390,7 @@ namespace MB.MatEdit
             }
 
             Vector4 tiling = MatGUI.VectorField(new GUIContent("Offset", ""), property, PackagePart.z, PackagePart.w);
+            material.SetTextureOffset(property.Substring(0, property.Length - 3), new Vector2(tiling.z, tiling.w));
             return new Vector2(tiling.z, tiling.w);
         }
 
@@ -1382,7 +1421,12 @@ namespace MB.MatEdit
             }
 
             MatGUI.VectorField(new GUIContent("Tiling", ""), property, PackagePart.x, PackagePart.y);
-            return MatGUI.VectorField(new GUIContent("Offset", ""), property, PackagePart.z, PackagePart.w);
+            Vector4 tiling = MatGUI.VectorField(new GUIContent("Offset", ""), property, PackagePart.z, PackagePart.w);
+            
+            material.SetTextureScale(property.Substring(0, property.Length - 3), new Vector2(tiling.x, tiling.y));
+            material.SetTextureOffset(property.Substring(0, property.Length - 3), new Vector2(tiling.z, tiling.w));
+
+            return tiling;
         }
 
         #endregion
@@ -1434,6 +1478,9 @@ namespace MB.MatEdit
                 Texture2D resetTexture = AnimationCurveToTexture(resetCurve, quality);
                 data.unsavedTextures[property] = resetTexture;
                 material.SetTexture(property, resetTexture);
+                Vector4 st = CurveToBorders(resetCurve);
+                material.SetTextureOffset(property, new Vector2(st.z, st.w));
+                material.SetTextureScale(property, new Vector2(st.x, st.y));
             }
             else if (currentTask == Task.Copy)
             {
@@ -1474,7 +1521,11 @@ namespace MB.MatEdit
                 }
 
                 material.SetTexture(property, mainTexture);
+                Vector4 st = CurveToBorders(curve);
+                material.SetTextureOffset(property, new Vector2(st.z, st.w));
+                material.SetTextureScale(property, new Vector2(st.x, st.y));
             }
+
 
             MarkForSave(material);
             return material.GetTexture(property);

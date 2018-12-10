@@ -25,7 +25,7 @@ Shader "MatEdit/DemoShader"
 			#pragma multi_compile __ HEIGHT_MOD
 			
 			#include "UnityCG.cginc"
-			#include "Includes/MatEditCG.cginc"
+			#include "MatEditCG.cginc"
 
 			struct appdata
 			{
@@ -46,14 +46,16 @@ Shader "MatEdit/DemoShader"
 			sampler2D _ColorGradient;
 
 			sampler2D _CurveHeightX;
+			float4 _CurveHeightX_ST;
 			sampler2D _CurveHeightY;
+			float4 _CurveHeightY_ST;
 			float _MinHeight;
 			float _MaxHeight;
 
 			float _Brightness;
 			
 			v2f vert (appdata v)
-			{
+			{ 
 				v2f o;
 				#if HEIGHT_MOD
 				float height = clamp(sampleCurve(_CurveHeightY, v.uv.y) * sampleCurve(_CurveHeightX, v.uv.x), _MinHeight, _MaxHeight);
@@ -67,7 +69,6 @@ Shader "MatEdit/DemoShader"
 			fixed4 frag (v2f i) : SV_Target
 			{
 				fixed4 col = tex2D(_MainTex, i.uv * _MainTex_ST.xy + _MainTex_ST.zw);
-				
 				col *= sampleGradient(_ColorGradient, i.uv.y) * _Brightness;
 
 				return col;
